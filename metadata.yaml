@@ -1,0 +1,10 @@
+name: rss
+maintainer: Mark Mims <mark.mims@ubuntu.com>
+summary: netflix oss container
+description: netflix oss container
+provides:
+  website:
+    interface: http
+#requires:
+# database:
+#   interface: mysql

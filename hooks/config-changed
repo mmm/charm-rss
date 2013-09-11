@@ -1,0 +1,64 @@
+#!/bin/bash
+set -eux
+
+#[ -f lib/netflix/utils.sh ] && . lib/netflix/utils.sh 
+#[ -f lib/netflix/rss-utils.sh ] && . lib/netflix/rss-utils.sh 
+#[ -f lib/netflix/eureka-utils.sh ] && . lib/netflix/eureka-utils.sh 
+
+pull_fresh_source() {
+  local repo=$1
+  local destination=$2
+  rm -Rf $destination
+  mkdir -p $destination
+  git clone $repo $destination
+}
+
+gradle_build() {
+  local build_dir=$1
+  cd $build_dir
+	export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+	#export JAVA_HOME=/usr/lib/jvm/java-6-openjdk
+	export PATH=$JAVA_HOME/bin:$PATH
+  ./gradlew clean build
+  cd $CHARM_DIR
+}
+
+build_rss() {
+  local rss_build_dir=$1
+  pull_fresh_source https://github.com/Netflix/recipes-rss.git $rss_build_dir
+  gradle_build $rss_build_dir
+}
+[ "$(config-get build_rss)" == "True" ] && build_rss $(config-get rss_build_dir)
+
+build_eureka() {
+  local eureka_build_dir=$1
+  pull_fresh_source https://github.com/Netflix/eureka.git $eureka_build_dir
+  gradle_build $eureka_build_dir
+}
+[ "$(config-get build_eureka)" == "True" ] && build_eureka $(config-get eureka_build_dir)
+
+set_tomcat_port() {
+  local port=$1
+  sed -i "s/8080/$port/g" /etc/tomcat6/server.xml
+  #TODO use a template
+  if (( $port < 1024 )); then
+    sed -i 's/#AUTHBIND=no/AUTHBIND=yes/' /etc/default/tomcat6
+    #TODO use a template
+  fi
+  open-port $port/TCP
+}
+tomcat_port=$(config-get tomcat_port)
+[ -n "$tomcat_port" ] && [ "$tomcat_port" != "8080" ] && set_tomcat_port $tomcat_port
+
+install_eureka() {
+  local build_dir="$(config-get eureka_build_dir)/eureka-server/build/libs/"
+  local war_file=$(find $build_dir -name "*.war")
+  local webapps_dir=/var/lib/tomcat6/webapps
+  [ -f "$war_file" ] && cp $war_file $webapps_dir/eureka.war
+}
+#TODO add other ways of getting a war file besides building
+install_eureka
+
+service tomcat6 restart
+
+exit 0
