@@ -50,6 +50,16 @@ set_tomcat_port() {
 tomcat_port=$(config-get tomcat_port)
 [ -n "$tomcat_port" ] && [ "$tomcat_port" != "8080" ] && set_tomcat_port $tomcat_port
 
+install_rss() {
+  local build_dir="$(config-get rss_build_dir)/rss-middletier/build/libs/"
+  local jar_file=$(find $build_dir -name "*SNAPSHOT.jar")
+  local rss_jar_dir="$(config-get rss_build_dir)/rss-middletier.jar"
+  mkdir -p $rss_jar_dir
+  [ -f "$jar_file" ] && ( cd $rss_jar_dir && jar xvf $jar_file )
+}
+#TODO add other ways of getting a war file besides building
+[ "$(config-get build_rss)" == "True" ] && install_rss
+
 install_eureka() {
   local build_dir="$(config-get eureka_build_dir)/eureka-server/build/libs/"
   local war_file=$(find $build_dir -name "*.war")
@@ -57,7 +67,7 @@ install_eureka() {
   [ -f "$war_file" ] && cp $war_file $webapps_dir/eureka.war
 }
 #TODO add other ways of getting a war file besides building
-install_eureka
+[ "$(config-get build_eureka)" == "True" ] && install_eureka
 
 service tomcat6 restart
 
