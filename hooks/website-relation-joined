@@ -10,4 +10,3 @@ h=$(unit-get private-address)
 
 relation-set port="8080" hostname="$h"
 
-echo $ENSEMBLE_REMOTE_UNIT joined

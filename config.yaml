@@ -7,15 +7,3 @@ options:
     type: boolean
     default: false
     description: "build this?"
-  eureka_build_dir:
-    type: string
-    default: "/opt/eureka"
-    description: "eureka dir"
-  build_eureka:
-    type: boolean
-    default: false
-    description: "build this?"
-  tomcat_port:
-    type: string
-    default: "8080"
-    description: "tomcat port"

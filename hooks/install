@@ -4,27 +4,11 @@
 
 set -eu
 
+apt-get -y install -qq python-cheetah
+
 install_java_tools() {
-  apt-get -y install -qq openjdk-6-jdk maven gradle
+  apt-get -y install -qq openjdk-6-jdk maven gradle python-cheetah
 }
 install_java_tools
-
-install_tomcat() {
-  apt-get -y install -qq tomcat6 tomcat6-admin tomcat6-docs tomcat6-examples python-cheetah
-}
-install_tomcat
-
-configure_tomcat_users() {
-  local DEFAULT_ADMIN_USERNAME="admin"
-  local DEFAULT_ADMIN_PASSWORD="admin"
-  mv /etc/tomcat6/tomcat-users.xml /etc/tomcat6/tomcat-users.xml.orig
-  sed -e s#__admin_username__#$DEFAULT_ADMIN_USERNAME# -e s#__admin_password__#$DEFAULT_ADMIN_PASSWORD# ${CHARM_DIR}/templates/tomcat-users.tmpl > /etc/tomcat6/tomcat-users.xml
-}
-configure_tomcat_users
-
-restart_tomcat() {
-  service tomcat6 status && service tomcat6 restart || service tomcat6 start
-}
-restart_tomcat
 
 

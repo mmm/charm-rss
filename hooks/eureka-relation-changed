@@ -18,11 +18,12 @@ update_eureka_config() {
   rss_env="dev"
   rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier-${rss_env}.properties"
   cat > $rss_middletier_config << EOS
-    rss.store=cassandra
-    cassandra.host=$(relation-get private-address)
-    cassandra.port=$(relation-get port)
+    eureka.serviceUrl.default=http://$(relation-get private-address)/eureka/v2/
+    eureka.port=$(relation-get port)
 EOS
 }
+
+update_eureka_config
 
 # restart server?  to pick up config changes
 
