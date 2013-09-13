@@ -1,0 +1,33 @@
+#!/bin/bash
+set -eux
+
+# other side up yet?
+[ -n "$(relation-get port)" ] || exit 0
+
+# defaults
+##############################################
+## Astyanax Configuration
+#cassandra.host=ec2-54-234-8-47.compute-1.amazonaws.com
+#cassandra.port=7102
+#cassandra.maxConnectionsPerHost=3
+#cassandra.keyspace=RSS
+#cassandra.columnfamily=Subscriptions
+##############################################
+## RSS Store (cassandra|inmemory)
+#rss.store=inmemory
+##############################################
+
+update_astyanax_config() {
+  rss_env="dev"
+  rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier-${rss_env}.properties"
+  cat > $rss_middletier_config << EOS
+    rss.store=cassandra
+    cassandra.host=$(relation-get private-address)
+    cassandra.port=$(relation-get port)
+EOS
+}
+update_astyanax_config
+
+# restart server?  to pick up config changes
+
+exit 0

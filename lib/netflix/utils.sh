@@ -12,11 +12,10 @@ pull_fresh_source() {
 gradle_build() {
   local build_dir=$1
   cd $build_dir
-	#export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
-	export JAVA_HOME=/usr/lib/jvm/java-6-openjdk
+	export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+	#export JAVA_HOME=/usr/lib/jvm/java-6-openjdk
 	export PATH=$JAVA_HOME/bin:$PATH
   ./gradlew clean build
   cd $CHARM_DIR
-  #( cd /opt/restcomm/restcomm.core && export JAVA_HOME=/usr/lib/jvm/java-6-openjdk-amd64/ && mvn clean install )
 }
 

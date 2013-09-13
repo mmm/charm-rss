@@ -5,6 +5,8 @@ description: netflix oss container
 provides:
   website:
     interface: http
-#requires:
-# database:
-#   interface: mysql
+requires:
+  cassandra:
+    interface: cassandra
+  eureka:
+    interface: http

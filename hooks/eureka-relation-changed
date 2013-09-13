@@ -1,0 +1,29 @@
+#!/bin/bash
+set -eux
+
+# other side up yet?
+[ -n "$(relation-get port)" ] || exit 0
+
+# defaults
+##############################################
+## Eureka Configuration
+#eureka.name=middletier
+## should be the same as netty.http.port above
+#eureka.port=9191
+#eureka.vipAddress=middletier
+#eureka.serviceUrl.default=http://localhost/eureka/v2/
+##############################################
+
+update_eureka_config() {
+  rss_env="dev"
+  rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier-${rss_env}.properties"
+  cat > $rss_middletier_config << EOS
+    rss.store=cassandra
+    cassandra.host=$(relation-get private-address)
+    cassandra.port=$(relation-get port)
+EOS
+}
+
+# restart server?  to pick up config changes
+
+exit 0
