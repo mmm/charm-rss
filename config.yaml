@@ -5,5 +5,5 @@ options:
     description: "rss dir"
   build_rss:
     type: boolean
-    default: false
+    default: True
     description: "build this?"

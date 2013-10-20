@@ -1,6 +1,7 @@
 #!/bin/bash
 set -eux
 
+[ -f lib/ch-file.sh ] && . lib/ch-file.sh 
 [ -f lib/netflix/utils.sh ] && . lib/netflix/utils.sh 
 #[ -f lib/netflix/rss-utils.sh ] && . lib/netflix/rss-utils.sh 
 
@@ -11,16 +12,65 @@ build_rss() {
 }
 [ "$(config-get build_rss)" == "True" ] && build_rss $(config-get rss_build_dir)
 
-install_rss() {
+explode_jar() {
+  local jar_file=$1
+  local destination=$2
+  mkdir -p $destination
+  [ -f "$jar_file" ] && ( cd $destination && jar xvf $jar_file )
+}
+
+install_middletier_upstart() {
+  local rss_root=$1
+  local rss_jar=$2
+  local app_name="rss-middletier"
+  local app_env="dev"
+  local java_args="" #"-Xmx256m"
+  local rss_args=""
+  local user="ubuntu"
+  ch_template_file 0644 \
+                   $user:nogroup \
+                   templates/defaults \
+                   /etc/default/$app_name \
+                   "app_name java_args rss_root rss_args app_env"
+  install --mode=644 --owner=root --group=root files/rss-middletier.conf /etc/init/
+}
+
+install_edge_upstart() {
+  local rss_root=$1
+  local rss_jar=$2
+  local app_name="rss-edge"
+  local app_env="dev"
+  local java_args="" #"-Xmx256m"
+  local rss_args=""
+  local user="ubuntu"
+  ch_template_file 0644 \
+                   $user:nogroup \
+                   templates/defaults \
+                   /etc/default/$app_name \
+                   "app_name java_args rss_root rss_args app_env"
+  install --mode=644 --owner=root --group=root files/rss-edge.conf /etc/init/
+}
+
+install_rss_middletier() {
   local build_dir="$(config-get rss_build_dir)/rss-middletier/build/libs/"
   local jar_file=$(find $build_dir -name "*SNAPSHOT.jar")
   local rss_jar_dir="$(config-get rss_build_dir)/rss-middletier.jar"
-  mkdir -p $rss_jar_dir
-  [ -f "$jar_file" ] && ( cd $rss_jar_dir && jar xvf $jar_file )
+  explode_jar $jar_file $rss_jar_dir
+  install_middletier_upstart $build_dir $jar_file
 }
 #TODO add other ways of getting a war file besides building
-[ "$(config-get build_rss)" == "True" ] && install_rss
+[ "$(config-get rss_middletier)" == "True" ] && install_rss_middletier
 
-# install rss upstart job
+install_rss_edge() {
+  local build_dir="$(config-get rss_build_dir)/rss-edge/build/libs/"
+  local jar_file=$(find $build_dir -name "*SNAPSHOT.jar")
+  local rss_jar_dir="$(config-get rss_build_dir)/rss-edge.jar"
+  explode_jar $jar_file $rss_jar_dir
+  install_edge_upstart $build_dir $jar_file
+}
+#TODO add other ways of getting a war file besides building
+[ "$(config-get rss_edge)" == "True" ] && install_rss_edge
+
+#open-port 9091/TCP
 
 exit 0

@@ -19,8 +19,9 @@ set -eux
 
 update_astyanax_config() {
   rss_env="dev"
-  rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier-${rss_env}.properties"
-  cat > $rss_middletier_config << EOS
+  #rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier-${rss_env}.properties"
+  rss_middletier_config="$(config-get rss_build_dir)/rss-middletier.jar/middletier.properties"
+  cat >> $rss_middletier_config << EOS
     rss.store=cassandra
     cassandra.host=$(relation-get private-address)
     cassandra.port=$(relation-get port)
